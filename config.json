@@ -12,8 +12,8 @@
     "codeId": 9539
   },
   "factory": {
-    "address": "secret1nkhckj0dpd5dfmsdfkfztjxtea0sq5lz8p0gsw",
-    "viewing_key": "fqsqspt08",
+    "address": "secret19xtxh6penlk7yezf7tm4ta04hkv00ykmryuvma",
+    "viewing_key": "wrkx7yif",
     "codeHash": "b3da0a96180dd7dd372c127e307945c4283c70da0ae9285a9630898645f32ab1",
     "codeId": 9541
   },
@@ -21,8 +21,7 @@
     "codeHash": "5a2d17cbde12ccdcb8b19919b5069630eae8d49904ffa9a4f1d3c157ddec2445",
     "codeId": 9568,
     "listings": [
-      "secret1r3emk7xy5ztmcv3tgfpj9qknt0h5833euftxyx",
-      "secret1prrrwdw89q8uxc2qvvl2a5jez02ufz3a0pvqnm"
+      "secret1wa7ffp5nkmkzselakg485e23g9lg8ugku0svt4"
     ]
   }
 }

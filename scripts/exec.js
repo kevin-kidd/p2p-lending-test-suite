@@ -267,7 +267,6 @@ if (args.length === 0) {
             rl.question("Principal: ", function(principal) {
                 let token_ids = tokens.split(',')
                 createListing(token_ids, expiration, principal)
-                rl.close();
             })
         });
     });
@@ -288,3 +287,4 @@ if (args.length === 0) {
 } else {
     console.log('Incorrect argument provided.')
 }
+rl.close()

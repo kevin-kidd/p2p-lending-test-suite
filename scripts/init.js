@@ -90,7 +90,6 @@ const setViewingKeys = async (type, contractAddress) => {
     )
 
     if(viewingKeyTx_borrower.code !== 0 || viewingKeyTx_lender.code !== 0) {
-        console.error("Failed to set viewing keys!")
         return undefined
     }
     return key
@@ -113,6 +112,7 @@ const initContract = async (type) => {
         )
 
         if(instantiateTx.code !== 0) {
+            console.log(instantiateTx)
             console.error("Failed to instantiate contract: " + type)
             return undefined
         }
@@ -122,7 +122,7 @@ const initContract = async (type) => {
         ).value
 
         let viewing_key = await setViewingKeys(type, contractAddress)
-        if(!viewing_key === undefined){
+        if(viewing_key === undefined){
             console.log("Failed to set viewing key!")
             return
         }
@@ -132,6 +132,9 @@ const initContract = async (type) => {
                 console.log(err)
             } else {
                 let obj = JSON.parse(data)
+                if(type === 'factory'){
+                    obj.offspring.listings = []
+                }
                 obj[type].viewing_key = viewing_key
                 obj[type].address = contractAddress
                 fs.writeFile("./config.json", JSON.stringify(obj, null, 2), 'utf8', err => {
