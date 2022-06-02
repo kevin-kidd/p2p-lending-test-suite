@@ -1,0 +1,28 @@
+{
+  "snip24": {
+    "address": "secret1w47dn7x0xf92ta888mdmxgdjyvgh2q5taaq5ux",
+    "viewing_key": "a2uere1o6",
+    "codeHash": "338574ceb3062ffdefa28417e310d018bf045c9a5527a2e9901654a1e344e3c2",
+    "codeId": 9538
+  },
+  "snip721": {
+    "address": "secret1rrsc9hhh7np8zx92jfzrux77pw0fgtk2qduuy6",
+    "viewing_key": "is9dxpwq",
+    "codeHash": "090ab9b7968745369f8888302a16650164e2ffc2f44c393a7382f74e122a9a8e",
+    "codeId": 9539
+  },
+  "factory": {
+    "address": "secret1nkhckj0dpd5dfmsdfkfztjxtea0sq5lz8p0gsw",
+    "viewing_key": "fqsqspt08",
+    "codeHash": "b3da0a96180dd7dd372c127e307945c4283c70da0ae9285a9630898645f32ab1",
+    "codeId": 9541
+  },
+  "offspring": {
+    "codeHash": "5a2d17cbde12ccdcb8b19919b5069630eae8d49904ffa9a4f1d3c157ddec2445",
+    "codeId": 9568,
+    "listings": [
+      "secret1r3emk7xy5ztmcv3tgfpj9qknt0h5833euftxyx",
+      "secret1prrrwdw89q8uxc2qvvl2a5jez02ufz3a0pvqnm"
+    ]
+  }
+}

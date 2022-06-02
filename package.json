@@ -1,0 +1,24 @@
+{
+  "name": "test_scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "lodash": "^4.17.21",
+    "prompt-sync": "^4.2.0",
+    "secretjs": "^1.2.0-beta.64"
+  },
+  "scripts": {
+    "deposit": "node scripts/deposit.js",
+    "upload": "node scripts/upload.js",
+    "init": "node scripts/init.js",
+    "mint": "node scripts/mint.js",
+    "exec": "node scripts/exec.js",
+    "query": "node scripts/query.js"
+  }
+}
