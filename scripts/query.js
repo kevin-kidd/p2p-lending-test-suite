@@ -1,5 +1,5 @@
 import fs from "fs";
-import {getClient} from "../helper.js";
+import {getClient} from "./helper.js";
 import _ from 'lodash'
 
 const file = fs.readFileSync('./config.json', 'utf8')

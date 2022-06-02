@@ -1,4 +1,4 @@
-import {getClient} from "../helper.js";
+import {getClient} from "./helper.js";
 import fs from "fs"
 import {MsgExecuteContract} from "secretjs";
 

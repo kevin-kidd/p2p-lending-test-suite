@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 dotenv.config()
-import {getClient} from "../helper.js";
+import {getClient} from "./helper.js";
 import fs from "fs"
 
 const file = fs.readFileSync('./config.json', 'utf8')

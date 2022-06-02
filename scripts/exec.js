@@ -1,5 +1,5 @@
 import fs from "fs"
-import {getClient} from "../helper.js";
+import {getClient} from "./helper.js";
 import {MsgExecuteContract} from "secretjs";
 import readline from "readline"
 const rl = readline.createInterface({
