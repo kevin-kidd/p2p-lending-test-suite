@@ -1,11 +1,7 @@
 import fs from "fs"
 import {getClient} from "./helper.js";
 import {MsgExecuteContract} from "secretjs";
-import readline from "readline"
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-})
+import readlineSync from 'readline-sync'
 
 const client = await getClient('borrower')
 
@@ -262,14 +258,11 @@ const args = process.argv.slice(2);
 if (args.length === 0) {
     console.log('No arguments provided, need --create-listing')
 } else if(args.length === 1 && args[0] === '--create-listing'){
-    rl.question("Token IDs for collateral (comma-separated): ", function(tokens) {
-        rl.question("Expiration (in seconds): ", function(expiration) {
-            rl.question("Principal: ", function(principal) {
-                let token_ids = tokens.split(',')
-                createListing(token_ids, expiration, principal)
-            })
-        });
-    });
+    let tokens = readlineSync.question('Token IDs for collateral (comma-separated): ')
+    let token_ids = tokens.split(',')
+    let expiration = readlineSync.question("Expiration (in seconds): ")
+    let principal = readlineSync.question("Principal: ")
+    createListing(token_ids, expiration, principal)
 } else if(args.length === 2 && args[0] === '--cancel-listing'){
     cancelListing(args[1])
 } else if(args.length === 2 && args[0] === '--liquidate') {
@@ -287,4 +280,3 @@ if (args.length === 0) {
 } else {
     console.log('Incorrect argument provided.')
 }
-rl.close()

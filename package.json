@@ -11,6 +11,7 @@
     "dotenv": "^16.0.1",
     "lodash": "^4.17.21",
     "prompt-sync": "^4.2.0",
+    "readline-sync": "^1.4.10",
     "secretjs": "^1.2.0-beta.64"
   },
   "scripts": {
