@@ -19,6 +19,8 @@
     "init": "node scripts/init.js",
     "mint": "node scripts/mint.js",
     "exec": "node scripts/exec.js",
-    "query": "node scripts/query.js"
+    "query": "node scripts/query.js",
+    "deploy": "node scripts/deploy.js",
+    "test": "node tests/test.js"
   }
 }

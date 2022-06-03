@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import {getClient} from "./helper.js";
 import fs from "fs"
+import url from "url";
 
 const file = fs.readFileSync('./config.json', 'utf8')
 const config = JSON.parse(file)
@@ -55,7 +56,7 @@ const initMsgs = {
     }
 }
 
-const setViewingKeys = async (type, contractAddress) => {
+const setViewingKeys = async (type, updateConfig, contractAddress) => {
     const borrower_client = await getClient('borrower')
     const lender_client = await getClient('lender')
 
@@ -75,6 +76,10 @@ const setViewingKeys = async (type, contractAddress) => {
         { gasLimit: 1_000_000 }
     )
 
+    if(viewingKeyTx_borrower.code !== 0){
+        console.error("Unable to set viewing key for contract `" + type + "` (borrower)")
+    }
+
     const viewingKeyTx_lender = await lender_client.tx.compute.executeContract(
         {
             sender: lender_client.address,
@@ -89,7 +94,22 @@ const setViewingKeys = async (type, contractAddress) => {
         { gasLimit: 1_000_000 }
     )
 
+    if(updateConfig) {
+        fs.readFile("./config.json", 'utf8', function readFileCallback(err, data) {
+            if (err) {
+                console.log(err)
+            } else {
+                let obj = JSON.parse(data)
+                obj[type].viewing_key = key
+                fs.writeFile("./config.json", JSON.stringify(obj, null, 2), 'utf8', err => {
+                    if (err) throw err
+                })
+            }
+        })
+    }
+
     if(viewingKeyTx_borrower.code !== 0 || viewingKeyTx_lender.code !== 0) {
+        console.error("Unable to set viewing key for contract `" + type + "` (lender)")
         return undefined
     }
     return key
@@ -106,14 +126,14 @@ const initContract = async (type) => {
                 codeId: config[type].codeId,
                 codeHash: config[type].codeHash, // optional but way faster
                 initMsg: initMsgs[type],
-                label: type + " Test Contract" + Math.floor(Math.random() * 100),
+                label: type + " Test Contract" + Math.floor(Math.random() * 10000),
             },
             { gasLimit: 1_000_000 }
         )
 
         if(instantiateTx.code !== 0) {
             console.log(instantiateTx)
-            console.error("Failed to instantiate contract: " + type)
+            console.error("Error while instantiating contract: " + type)
             return undefined
         }
 
@@ -121,7 +141,7 @@ const initContract = async (type) => {
             (log) => log.type === "message" && log.key === "contract_address",
         ).value
 
-        let viewing_key = await setViewingKeys(type, contractAddress)
+        let viewing_key = await setViewingKeys(type, false, contractAddress)
         if(viewing_key === undefined){
             console.log("Failed to set viewing key!")
             return
@@ -154,32 +174,45 @@ const initContract = async (type) => {
     }
 }
 
-const initAll = async (types) => {
+export const initAll = async (types) => {
     for(const x of types){
-        await initContract(x)
+        let response = await initContract(x)
+        if(response !== "success"){
+            return false
+        }
     }
+    return true
 }
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
-    console.log('No arguments provided, need --contract (snip24, snip721, factory, all)')
-} else if (args.length === 2 && args[0] === '--contract') {
-    const types = ["snip24", "snip721", "factory"]
-    if (types.includes(args[1])) {
-        initContract(args[1]).then(() => console.log("Contract details have been saved to config.json"))
-    } else if (args[1] === "all"){
-        initAll(types).then(() => console.log("Contract details have been saved to config.json"))
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+    if (args.length === 0) {
+        console.log("No arguments provided, use --help for available arguments")
+    } else if (args.length === 2 && args[0] === '--contract') {
+        const types = ["snip24", "snip721", "factory"]
+        if (types.includes(args[1])) {
+            await initContract(args[1]).then(() => console.log("Contract details have been saved to config.json"))
+        } else if (args[1] === "all") {
+            await initAll(types).then(() => console.log("Contract details have been saved to config.json"))
+        } else {
+            console.log("You did not supply a correct argument value! (snip24, snip721, factory, all)")
+        }
+    } else if (args.length === 2 && args[0] === '--set-viewing-key') {
+        const types = ["snip24", "snip721", "factory"]
+        if (types.includes(args[1])) {
+            let viewing_key = await setViewingKeys(args[1], true, config[args[1]].address)
+            console.log("Set new viewing key: " + viewing_key + " for contract: " + args[1])
+        } else {
+            console.log("You did not supply a correct argument value! (snip24, snip721, factory)")
+        }
+    } else if (args.length === 1 && args[0] === '--help') {
+        console.log(
+            "\nAvailable arguments:\n" +
+            "--contract [snip721, snip24, factory]\n" +
+            "--set-viewing-key [snip721, snip24, factory]\n" +
+            "Example: 'yarn run init --set-viewing-key snip24'\n"
+        )
     } else {
-        console.log("You did not supply a correct argument value! (snip24, snip721, factory, all)")
+        console.log('Incorrect arguments provided, use --help for available arguments')
     }
-} else if (args.length === 3 && args[0] === '--contract' && args[2] === '--set-viewing-key') {
-    const types = ["snip24", "snip721", "factory"]
-    if (types.includes(args[1])) {
-        let viewing_key = await setViewingKeys(args[1], config[args[1]].address)
-        console.log("Set new viewing key: " + viewing_key + " for contract: " + args[1])
-    } else {
-        console.log("You did not supply a correct argument value! (snip24, snip721, factory)")
-    }
-} else {
-    console.log('Incorrect argument provided, need --contract')
 }

@@ -21,3 +21,38 @@ export const getClient = async (type) => {
         console.error(e.message)
     }
 }
+
+export const trueBalance = (balance) => {
+    return new Intl.NumberFormat("en-US", {}).format(
+        + balance / 1e6
+    )
+}
+
+export const calculateGas = async (transaction, client) => {
+    try {
+        const sim = await client.tx.simulate([transaction])
+        return Math.ceil(sim.gasInfo.gasUsed * 1.1)
+    } catch (e) {
+        console.log(e.message)
+        console.error("\nUnable to calculate gas for the transaction.")
+    }
+
+}
+
+export const broadcastTx = async (transaction, client) => {
+    try{
+        const tx = await client.tx.broadcast([transaction],
+            {
+                gasLimit: await calculateGas(transaction, client)
+            }
+        )
+        if(tx.code !== 0){
+            console.log(transaction)
+            return "Transaction failed!"
+        }
+        return tx
+    } catch (e) {
+        console.log(e.message)
+        console.error("\nError broadcasting transaction.")
+    }
+}

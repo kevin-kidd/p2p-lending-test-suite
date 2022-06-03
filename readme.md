@@ -1,6 +1,21 @@
 ## Usage & Examples
 You will find examples below for all of the commands included in this test suite.
 
+### Deployment
+Deploy and upload new contracts from the contracts directory
+```angular2html
+yarn run deploy --update-contracts
+```
+Deploy without uploading contracts
+```angular2html
+yarn run deploy
+```
+### Run Tests
+Test the liquidation functionality
+```angular2html
+yarn run test --liquidation
+```
+
 ### Upload & Instantiate
 
 Upload a contract
@@ -11,9 +26,9 @@ Instantiate a contract
 ```angular2html
 yarn run init --contract [all, factory, snip24, snip721]
 ```
-Set a newly generated viewing key for all contracts. This will set the same viewing key for the lender & borrower accounts.
+Set a newly generated viewing key for any contract. This will set the same viewing key for the lender & borrower accounts.
 ```angular2html
-yarn run init --contract [snip24, snip721, factory] --set-viewing-key
+yarn run init --set-viewing-key [snip24, snip721, factory]
 ```
 
 ### Contract Executions

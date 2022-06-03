@@ -1,4 +1,5 @@
 import fs from "fs"
+import url from 'url'
 import {getClient}  from "./helper.js"
 
 const uploadContract = async (type) => {
@@ -38,7 +39,7 @@ const uploadContract = async (type) => {
         });
 
         console.log(
-            "\n### New '" + type + "' Contract Details ###\n" +
+            "\n### Successfully Uploaded: '" + type + "' - Contract Details ###\n" +
             "Code ID: " + codeId +
             "\nCode Hash: " + codeHash + "\n"
         )
@@ -50,25 +51,31 @@ const uploadContract = async (type) => {
     }
 }
 
-const uploadAll = async (types) => {
+export const uploadAll = async (types) => {
     for(const x of types){
-        await uploadContract(x)
+        let response = await uploadContract(x)
+        if(response !== "success"){
+            return false
+        }
     }
+    return true
 }
 
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
-    console.log('No arguments provided, need --contract (snip24, snip721, offspring, factory, all)')
-} else if (args.length === 2 && args[0] === '--contract') {
-    const types = ["snip24", "snip721", "offspring", "factory"]
-    if (types.includes(args[1])) {
-        uploadContract(args[1]).then(() => console.log("New contract details have been saved to config.json"))
-    } else if (args[1] === "all"){
-        uploadAll(types).then(() => console.log("New contract details have been saved to config.json"))
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+    if(args.length === 0){
+        console.log("No arguments provided, need --contract (snip24, snip721, offspring, factory, all)")
+    } else if (args.length === 2 && args[0] === '--contract') {
+        const types = ["snip24", "snip721", "offspring", "factory"]
+        if (types.includes(args[1])) {
+            uploadContract(args[1]).then(() => console.log("New contract details have been saved to config.json"))
+        } else if (args[1] === "all"){
+            uploadAll(types).then(() => console.log("New contract details have been saved to config.json"))
+        } else {
+            console.log("You did not supply a correct argument value! (snip24, snip721, offspring, factory, all)")
+        }
     } else {
-        console.log("You did not supply a correct argument value! (snip24, snip721, offspring, factory, all)")
+        console.log('Incorrect arguments provided, need --contract (snip24, snip721, offspring, factory, all)')
     }
-} else {
-    console.log('Incorrect argument provided, need --contract')
 }
