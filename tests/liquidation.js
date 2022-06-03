@@ -5,6 +5,8 @@ import {createListing, lend, liquidateListing} from "../scripts/exec.js";
 
 export const testLiquidation = async () => {
 
+    // TODO - Get initial snip24 balance of the borrower
+
     // Details for the listing
     let principal = "5"
     let expiration = "20"
@@ -37,6 +39,8 @@ export const testLiquidation = async () => {
 
     console.log("\nLending to the new listing...")
     await lend(offspringAddress, principal)
+
+    // TODO - Check borrower snip24 balance for lent tokens
 
     // Query to verify the loan is active
     let queryLoanResponse = await queryActiveLoan(offspringAddress)
