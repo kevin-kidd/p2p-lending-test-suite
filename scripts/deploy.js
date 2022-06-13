@@ -37,7 +37,9 @@ const deploy = async (updateContracts) => {
             "Borrower SCRT: " + balances.borrower.scrt +
             "\nBorrower SNIP24: " + balances.borrower.snip +
             "\nLender SCRT: " + balances.lender.scrt +
-            "\nLender SNIP24: " + balances.lender.snip + "\n"
+            "\nLender SNIP24: " + balances.lender.snip +
+            "\nTax SCRT: " + balances.tax.scrt +
+            "\nTax SNIP24: " + balances.tax.snip + "\n"
         )
     }
 

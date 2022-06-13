@@ -7,8 +7,10 @@ export const getClient = async (type) => {
         let wallet;
         if(type === 'borrower'){
             wallet = new Wallet(process.env.BORROWER_MNEMONIC)
-        } else {
+        } else if(type === 'lender'){
             wallet = new Wallet(process.env.LENDER_MNEMONIC)
+        } else {
+            wallet = new Wallet(process.env.TAX_MNEMONIC)
         }
         const address = wallet.address
         return await SecretNetworkClient.create({
@@ -23,9 +25,7 @@ export const getClient = async (type) => {
 }
 
 export const trueBalance = (balance) => {
-    return new Intl.NumberFormat("en-US", {}).format(
-        + balance / 1e6
-    )
+    return balance / 1e6
 }
 
 export const calculateGas = async (transaction, client) => {
@@ -36,7 +36,6 @@ export const calculateGas = async (transaction, client) => {
         console.log(e.message)
         console.error("\nUnable to calculate gas for the transaction.")
     }
-
 }
 
 export const broadcastTx = async (transaction, client) => {

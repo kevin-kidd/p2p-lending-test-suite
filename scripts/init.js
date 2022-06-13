@@ -48,7 +48,7 @@ const initMsgs = {
             code_id: config.offspring.codeId,
             code_hash: config.offspring.codeHash
         },
-        tax_addr: process.env.BORROWER_ADDRESS,
+        tax_addr: process.env.TAX_ADDRESS,
         tax_rate: {
             rate: 20,
             decimal_places: 3
@@ -59,6 +59,7 @@ const initMsgs = {
 const setViewingKeys = async (type, updateConfig, contractAddress) => {
     const borrower_client = await getClient('borrower')
     const lender_client = await getClient('lender')
+    const tax_client = await getClient('tax')
 
     let key = Math.random().toString(36).substr(4, 10)
 
@@ -76,13 +77,23 @@ const setViewingKeys = async (type, updateConfig, contractAddress) => {
         { gasLimit: 1_000_000 }
     )
 
-    if(viewingKeyTx_borrower.code !== 0){
-        console.error("Unable to set viewing key for contract `" + type + "` (borrower)")
-    }
-
     const viewingKeyTx_lender = await lender_client.tx.compute.executeContract(
         {
             sender: lender_client.address,
+            contractAddress: contractAddress,
+            codeHash: config[type].codeHash,
+            msg: {
+                set_viewing_key: {
+                    key: key
+                }
+            },
+        },
+        { gasLimit: 1_000_000 }
+    )
+
+    const viewingKeyTx_tax = await tax_client.tx.compute.executeContract(
+        {
+            sender: tax_client.address,
             contractAddress: contractAddress,
             codeHash: config[type].codeHash,
             msg: {
@@ -108,8 +119,8 @@ const setViewingKeys = async (type, updateConfig, contractAddress) => {
         })
     }
 
-    if(viewingKeyTx_borrower.code !== 0 || viewingKeyTx_lender.code !== 0) {
-        console.error("Unable to set viewing key for contract `" + type + "` (lender)")
+    if(viewingKeyTx_borrower.code !== 0 || viewingKeyTx_lender.code !== 0 || viewingKeyTx_tax.code !== 0) {
+        console.error("Unable to set viewing key for contract `" + type + "`")
         return undefined
     }
     return key

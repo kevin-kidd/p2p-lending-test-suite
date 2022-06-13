@@ -1,19 +1,19 @@
 {
   "snip24": {
-    "address": "secret1tpm6t6putrjvpfd3skv8ut3ucmxy8fg4j8l65r",
-    "viewing_key": "y3buhorp9",
+    "address": "secret14ajtjtcmd85c8km8fnv0jke8mx72e9l822l7ul",
+    "viewing_key": "njywojpgk",
     "codeHash": "338574ceb3062ffdefa28417e310d018bf045c9a5527a2e9901654a1e344e3c2",
     "codeId": 9622
   },
   "snip721": {
-    "address": "secret1hxgc3kc0w3k62f4t346xgm7dhhk32tmr3p9v5n",
-    "viewing_key": "0z6obxqr",
+    "address": "secret18qjs6nhsh7j375gq24ufkz42xkgezka4w8fcpl",
+    "viewing_key": "15kohdwci",
     "codeHash": "090ab9b7968745369f8888302a16650164e2ffc2f44c393a7382f74e122a9a8e",
     "codeId": 9623
   },
   "factory": {
-    "address": "secret10dynje3gsap65wu5z9c8t3l57uekz9yj8s7aug",
-    "viewing_key": "z1da4skw9",
+    "address": "secret1ez0mhgclc09rlcssexkh38feqsxajvwfnjpkc3",
+    "viewing_key": "m48953hk5",
     "codeHash": "b3da0a96180dd7dd372c127e307945c4283c70da0ae9285a9630898645f32ab1",
     "codeId": 9625
   },
@@ -21,26 +21,7 @@
     "codeHash": "5a2d17cbde12ccdcb8b19919b5069630eae8d49904ffa9a4f1d3c157ddec2445",
     "codeId": 9624,
     "listings": [
-      "secret1zuc4lhjegyt3qxkm9xw74gjtdd42me6gu9x4c9",
-      "secret13n8ppfjgknwzg9e8j70tntm9006xteyme9xy79",
-      "secret1uwyfg5y5kx4yedatmjuk3n68ew45j8hm8fp5gh",
-      "secret1ms6lnrdcyyfjxlmf4uumj43g82s3shfgpqm48e",
-      "secret1cv60lxted9j662t8ywhrfuxwvmf8z2nz4mt4lc",
-      "secret1vl3qn53rvrlesglzs9rqstn45qr9clk9vqgp96",
-      "secret1rdg4tjd4n6hkn8f4h5vmhqflw2qfw8fkjm9myy",
-      "secret1d97cn9qxhcygjfsh0g9npgvckp247lge7uqgeh",
-      "secret1tvexrv2k69nz9sl0v763hc7czfmrj0dz766lme",
-      "secret1jqldhzvhqjgd6uf7ymzcftjj0guvyhdypmejm4",
-      "secret1q6t8402y6mfxzq9qv78wwuj3e4davlvhwhtehm",
-      "secret1r3nxa3j9ynwkt0j9ftm7s7htpr89d4uyqeqzt7",
-      "secret1h2qqvkz5dyceuxzrev0rxqqvy4s9gq3x9tnzqh",
-      "secret1lnll57fls4eh2tjy5xffpv8ejf4kwnttn8auwq",
-      "secret1e5kq8m3lsr3rllnpy59u4l6us5rkrs2kmrgjfk",
-      "secret1gfcgnk7cxhtjam3xhav79kuzqe4fnfm9jz294z",
-      "secret1g4vu2de9n0qpq2sdqpu65ehgkcmpmacw7pd53t",
-      "secret1e4p58kwdy6c2s8ncugezdyd3h6kncuy4zlnsdy",
-      "secret1v5tgpck2vmejnugaw4z78x670g8zykfdavmq2s",
-      "secret1u3vl6547pu68462zlaagn5sjtmpgrg6p6a7e2m"
+      "secret15cvh8lge7zghraggqzn86vsmjrwq5n706smenx"
     ]
   }
 }

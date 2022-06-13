@@ -12,6 +12,7 @@ export const getBalances = async () => {
 
     const lender_client = await getClient('lender')
     const borrower_client = await getClient('borrower')
+    const tax_client = await getClient('tax')
 
     try {
         const lender_balance = await lender_client.query.bank.balance({
@@ -21,6 +22,11 @@ export const getBalances = async () => {
 
         const borrower_balance = await borrower_client.query.bank.balance({
             address: borrower_client.address,
+            denom: "uscrt",
+        })
+
+        const tax_balance = await tax_client.query.bank.balance({
+            address: tax_client.address,
             denom: "uscrt",
         })
 
@@ -46,6 +52,17 @@ export const getBalances = async () => {
             }
         })
 
+        const taxSnipBalance = await tax_client.query.compute.queryContract({
+            contractAddress: config.snip24.address,
+            codeHash: config.snip24.codeHash,
+            query: {
+                balance: {
+                    key: config.snip24.viewing_key,
+                    address: tax_client.address
+                }
+            }
+        })
+
         return {
             lender: {
                 scrt: trueBalance(lender_balance.balance.amount),
@@ -54,6 +71,10 @@ export const getBalances = async () => {
             borrower: {
                 scrt: trueBalance(borrower_balance.balance.amount),
                 snip: trueBalance(borrowerSnipBalance.balance.amount)
+            },
+            tax: {
+                scrt: trueBalance(tax_balance.balance.amount),
+                snip: trueBalance(taxSnipBalance.balance.amount)
             }
         }
     } catch (e) {
@@ -196,7 +217,7 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     } else if (args.length === 2 && args[0] === '--view-nfts') {
         console.log(await queryNFTs(args[1]))
     } else if (args.length === 1 && args[0] === '--get-balances') {
-        await getBalances()
+        console.log(await getBalances())
     } else if (args.length === 1 && args[0] === '--help') {
         console.log(
             "\nAvailable arguments:\n" +
