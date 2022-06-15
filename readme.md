@@ -15,6 +15,10 @@ Test the liquidation functionality
 ```angular2html
 yarn run test --liquidation
 ```
+Test the loan repayment functionality
+```angular2html
+yarn run test --repay-loan
+```
 
 ### Upload & Instantiate
 
