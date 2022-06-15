@@ -16,11 +16,11 @@ const initMsgs = {
         initial_balances: [
             {
                 address: process.env.BORROWER_ADDRESS,
-                amount: "1000000000"
+                amount: "1000000000000"
             },
             {
                 address: process.env.LENDER_ADDRESS,
-                amount: "1000000000"
+                amount: "1000000000000"
             }
         ],
         prng_seed: "eW8=",

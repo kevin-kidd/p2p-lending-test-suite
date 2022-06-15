@@ -1,67 +1,28 @@
-import fs from "fs";
 import {getClient, trueBalance} from "./helper.js";
 import _ from 'lodash'
 import url from "url";
-
-const file = fs.readFileSync('./config.json', 'utf8')
-const config = JSON.parse(file)
+import * as queries from "../interactions/queries.js";
 
 const client = await getClient('borrower')
 
 export const getBalances = async () => {
 
-    const lender_client = await getClient('lender')
-    const borrower_client = await getClient('borrower')
-    const tax_client = await getClient('tax')
+    const clients = {
+        lender: await getClient('lender'),
+        borrower: await getClient('borrower'),
+        tax: await getClient('tax')
+    }
 
     try {
-        const lender_balance = await lender_client.query.bank.balance({
-            address: lender_client.address,
-            denom: "uscrt",
-        })
+        // Fetch SCRT balances
+        const lender_balance = await queries.queryBalance(clients.lender)
+        const borrower_balance = await queries.queryBalance(clients.borrower)
+        const tax_balance = await queries.queryBalance(clients.tax)
 
-        const borrower_balance = await borrower_client.query.bank.balance({
-            address: borrower_client.address,
-            denom: "uscrt",
-        })
-
-        const tax_balance = await tax_client.query.bank.balance({
-            address: tax_client.address,
-            denom: "uscrt",
-        })
-
-        const lenderSnipBalance = await lender_client.query.compute.queryContract({
-            contractAddress: config.snip24.address,
-            codeHash: config.snip24.codeHash,
-            query: {
-                balance: {
-                    key: config.snip24.viewing_key,
-                    address: lender_client.address
-                }
-            }
-        })
-
-        const borrowerSnipBalance = await borrower_client.query.compute.queryContract({
-            contractAddress: config.snip24.address,
-            codeHash: config.snip24.codeHash,
-            query: {
-                balance: {
-                    key: config.snip24.viewing_key,
-                    address: borrower_client.address
-                }
-            }
-        })
-
-        const taxSnipBalance = await tax_client.query.compute.queryContract({
-            contractAddress: config.snip24.address,
-            codeHash: config.snip24.codeHash,
-            query: {
-                balance: {
-                    key: config.snip24.viewing_key,
-                    address: tax_client.address
-                }
-            }
-        })
+        // Fetch SNIP-24 balances
+        const lenderSnipBalance = await queries.querySnipBalance(clients.lender)
+        const borrowerSnipBalance = await queries.querySnipBalance(clients.borrower)
+        const taxSnipBalance = await queries.querySnipBalance(clients.tax)
 
         return {
             lender: {
@@ -85,119 +46,94 @@ export const getBalances = async () => {
 
 export const queryConfigInfo = async () => {
     try {
-        const response = await client.query.compute.queryContract({
-            contractAddress: config.factory.address,
-            codeHash: config.factory.codeHash,
-            query: { config_info: {} },
-        })
-        console.log(response.config_info)
-        return response.config_info
+        const configInfo = (await queries.queryConfig()).config_info
+        console.log(configInfo)
+        return configInfo
     } catch (e) {
         console.log(e.message)
         console.error("Failed to query config info.")
+        undefined
     }
 
 }
 
 export const queryActiveLoan = async (offspringAddress) => {
-    const lender_client = await getClient('lender')
+    try {
+        const lender_client = await getClient('lender')
 
-    const borrower_response = await client.query.compute.queryContract({
-        contractAddress: offspringAddress,
-        codeHash: config.offspring.codeHash,
-        query: {
-            listing_info: {
-                address: client.address,
-                viewing_key: config.factory.viewing_key
+        // Query the listing info from both borrower & client
+        const borrower_response = await queries.queryListingInfo(offspringAddress, client)
+        const lender_response = await queries.queryListingInfo(offspringAddress, lender_client)
+
+        // Validation for active loan
+        if(_.isEqual(lender_response, borrower_response)){
+            if(borrower_response.listing_info.status !== 'active'){
+                console.error("Listing is still awaiting loan.")
+                return undefined
             }
-        }
-    })
-
-    const lender_response = await client.query.compute.queryContract({
-        contractAddress: offspringAddress,
-        codeHash: config.offspring.codeHash,
-        query: {
-            listing_info: {
-                address: lender_client.address,
-                viewing_key: config.factory.viewing_key
-            }
-        }
-    })
-
-    if(_.isEqual(lender_response, borrower_response)){
-        if(borrower_response.listing_info.status !== 'active'){
-            console.log("Listing is still awaiting loan.")
+        } else {
+            console.error("Responses do not match!")
             return undefined
         }
-    } else {
-        console.log("Responses do not match!")
+        console.log("Listing is active!")
+        return borrower_response
+    } catch (e) {
+        console.error(e.message)
         return undefined
     }
-
-    console.log("Listing is active!")
-
-    return borrower_response
 }
 
 const queryMyOffsprings = async (type) => {
-    if(type !== "borrower" || type !== "lender"){
-        console.log("Incorrect argument value, need 'lender' or 'borrower'")
+    try {
+        if(type !== "borrower" || type !== "lender"){
+            console.log("Incorrect argument value, need 'lender' or 'borrower'")
+        }
+        const client = await getClient(type)
+        const myOffsprings = (await queries.listMyOffsprings(client)).list_my_offspring.active
+
+        console.log(myOffsprings)
+        return myOffsprings
+    } catch (e) {
+        console.error(e.message)
+        return undefined
     }
-    const client = await getClient(type)
-    const response = await client.query.compute.queryContract({
-        contractAddress: config.factory.address,
-        codeHash: config.factory.codeHash,
-        query: {
-            list_my_offspring: {
-                address: client.address,
-                viewing_key: config.factory.viewing_key
-            }
-        },
-    })
-    console.log(response.list_my_offspring.active)
-    return response.list_my_offspring.active
 }
 
 export const queryNFTs = async (type) => {
-    if(type !== 'borrower' && type !== 'lender'){
-        console.log("Please provide an argument value (borrower or lender)")
-        return
-    }
-    let client = await getClient(type)
-    return await client.query.compute.queryContract({
-        contractAddress: config.snip721.address,
-        codeHash: config.snip721.codeHash,
-        query: {
-            tokens: {
-                owner: client.address,
-                viewing_key: config.snip721.viewing_key
-            }
+    try {
+        if(type !== 'borrower' && type !== 'lender'){
+            console.log("Please provide an argument value (borrower or lender)")
+            return
         }
-    })
+        let client = await getClient(type)
+        return await queries.queryInventory(client)
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
+
 }
 
 const queryActiveOffsprings = async () => {
-
-    const response = await client.query.compute.queryContract({
-        contractAddress: config.factory.address,
-        codeHash: config.factory.codeHash,
-        query: { list_active_offspring: {} },
-    })
-
-    console.log(response.list_active_offspring.active)
-    return response.list_active_offspring.active
+    try {
+        const activeOffsprings = (await queries.listActiveOffsprings()).list_active_offspring.active
+        console.log(activeOffsprings)
+        return activeOffsprings
+    } catch (e) {
+        console.error(e.message)
+        return []
+    }
 }
 
 const queryInactiveOffsprings = async () => {
-
-    const response = await client.query.compute.queryContract({
-        contractAddress: config.factory.address,
-        codeHash: config.factory.codeHash,
-        query: { list_inactive_offspring: {} },
-    })
-
-    console.log(response.list_inactive_offspring)
-    return response.list_inactive_offspring
+    try {
+        const inactiveOffsprings = (await queries.listInactiveOffsprings()).list_inactive_offspring
+        console.log(inactiveOffsprings)
+        return inactiveOffsprings
+    } catch (e) {
+        console.error(e.message)
+        return []
+    }
 }
 
 const args = process.argv.slice(2);
@@ -213,7 +149,7 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     } else if (args.length === 1 && args[0] === '--config-info') {
         await queryConfigInfo()
     } else if (args.length === 2 && args[0] === '--active-loan') {
-        await queryActiveLoan(args[1])
+        console.log(await queryActiveLoan(args[1]))
     } else if (args.length === 2 && args[0] === '--view-nfts') {
         console.log(await queryNFTs(args[1]))
     } else if (args.length === 1 && args[0] === '--get-balances') {

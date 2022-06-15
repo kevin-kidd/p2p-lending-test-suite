@@ -1,248 +1,146 @@
 import fs from "fs"
-import { broadcastTx, getClient} from "./helper.js";
-import {MsgExecuteContract} from "secretjs";
+import {getClient} from "./helper.js"
 import readlineSync from 'readline-sync'
-import url from "url";
+import url from "url"
+import * as execs from "../interactions/executions.js"
 
 const client = await getClient('borrower')
 
-const file = fs.readFileSync('./config.json', 'utf8')
-const config = JSON.parse(file)
-
 const updateTax = async (rate) => {
-    const client = await getClient('borrower')
-
-    const updateTx = new MsgExecuteContract(
-        {
-            sender: client.address,
-            contractAddress: config.factory.address,
-            codeHash: config.factory.codeHash,
-            msg: {
-                update_tax: {
-                    tax_rate: {
-                        decimal_places: 2,
-                        rate: parseInt(rate)
-                    }
-                }
-            }
+    try {
+        const updateTaxResponse = await execs.execUpdateTax(client, rate)
+        if(updateTaxResponse.code !== 0){
+            console.error(updateTaxResponse)
+            console.error("Unable to update tax rate.")
         }
-    )
-    const response = await broadcastTx(updateTx, client)
-    console.log(response)
-    return response
+        return updateTaxResponse
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
-const updateStatus = async (status) => {
-    let new_status
-    status === 'start' ? new_status = false : new_status = true
-
-    const client = await getClient('borrower')
-
-    const updateTx = new MsgExecuteContract(
-        {
-            sender: client.address,
-            contractAddress: config.factory.address,
-            codeHash: config.factory.codeHash,
-            msg: {
-                set_status: {
-                    stop: new_status
-                }
-            }
+const changeStatus = async (status) => {
+    try {
+        const changeStatusResponse = await execs.execChangeStatus(status !== 'start', client)
+        if(changeStatusResponse.code !== 0){
+            console.error(changeStatusResponse)
+            console.error("Unable to update status.")
         }
-    )
-
-    const response = await broadcastTx(updateTx, client)
-    console.log(response)
-    return response
+        return changeStatusResponse
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
 const updateOffspring = async () => {
-
-    const client = await getClient('borrower')
-    const updateTx = new MsgExecuteContract(
-        {
-            sender: client.address,
-            contractAddress: config.factory.address,
-            codeHash: config.factory.codeHash,
-            msg: {
-                new_offspring_contract: {
-                    offspring_contract: {
-                        code_hash: config.offspring.codeHash,
-                        code_id: config.offspring.codeId
-                    }
-                }
-            }
+    try {
+        const updateOffspringResponse = await execs.execUpdateOffspring(client)
+        if(updateOffspringResponse.code !== 0){
+            console.error(updateOffspringResponse)
+            console.error("Unable to update status.")
         }
-    )
-
-    const response = await broadcastTx(updateTx, client)
-    console.log(response)
-    return response
-
+        return updateOffspringResponse
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
 export const liquidateListing = async (offspringAddress) => {
-
-    const lender_client = await getClient('lender')
-    const liquidateTx = new MsgExecuteContract(
-        {
-            sender: lender_client.address,
-            contractAddress: offspringAddress,
-            codeHash: config.offspring.codeHash,
-            msg: { liquidate: {} }
+    try {
+        const lender_client = await getClient('lender')
+        const liquidateResponse = await execs.execLiquidate(lender_client, offspringAddress)
+        const response = liquidateResponse.arrayLog.find((a) => {
+            return a.key === "response"
+        })
+        if(JSON.parse(response.value).liquidate.status === "Success"){
+            console.log("Liquidation successful!")
+            return liquidateResponse
+        } else {
+            console.error("Liquidation was not successful!")
+            return undefined
         }
-    )
-    const tx = await broadcastTx(liquidateTx, lender_client)
-
-    const response = tx.arrayLog.find((a) => {
-        return a.key === "response"
-    })
-
-    if(JSON.parse(response.value).liquidate.status === "Success"){
-        console.log("Liquidation successful!")
-        return tx
-    } else {
-        console.log("Liquidation was not successful!")
+    } catch (e) {
+        console.error(e.message)
         return undefined
     }
+}
 
+export const repayLoan = async (offspringAddress, owed) => {
+    try {
+        const repayResponse = await execs.execRepayLoan(owed, client, offspringAddress)
+        if(repayResponse === undefined) return undefined
+        return repayResponse.arrayLog.find((a) => {
+            return a.key === "response"
+        })
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
 export const lend = async (offspringAddress, principal) => {
-    const lender_client = await getClient('lender')
+    try {
+        const lender_client = await getClient('lender')
+        const lendResponse = await execs.execLend(offspringAddress, principal, lender_client)
 
-    const lendTx = new MsgExecuteContract(
-        {
-            sender: lender_client.address,
-            contractAddress: config.snip24.address,
-            codeHash: config.snip24.codeHash,
-            msg: {
-                send: {
-                    recipient: offspringAddress,
-                    amount: principal,
-                    msg: Buffer.from(JSON.stringify({lend_all:{}})).toString('base64')
-                }
-            },
+        const response = lendResponse.arrayLog.find((a) => {
+            return a.key === "response"
+        })
+        if(JSON.parse(response.value).receive_principal.status === "Success"){
+            console.log("Successfully lent " + principal + " snip24 tokens")
+            return lendResponse
+        } else {
+            console.error(lendResponse)
+            console.error("Failed to lend to the listing.")
+            return undefined
         }
-    )
-
-    const tx = await broadcastTx(lendTx, lender_client)
-
-    const response = tx.arrayLog.find((a) => {
-        return a.key === "response"
-    })
-
-    if(JSON.parse(response.value).receive_principal.status === "Success"){
-        console.log("Successfully lent " + principal + " snip24 tokens")
-        return tx
-    } else {
-        console.log(tx)
-        console.log("Failed to lend to the listing.")
+    } catch (e) {
+        console.error(e.message)
         return undefined
     }
-
-
 }
 
 const cancelListing = async (offspringAddress) => {
-    const cancelTx = new MsgExecuteContract(
-        {
-            sender: client.address,
-            contractAddress: offspringAddress,
-            codeHash: config.offspring.codeHash, // optional but way faster
-            msg: { cancel_listing: {} }
+    try {
+        const cancelResponse = await execs.execCancel(offspringAddress)
+        if(cancelResponse.code !== 0){
+            console.error(cancelResponse)
+            console.error("Failed to cancel the listing.")
         }
-    )
-    const response = await broadcastTx(cancelTx, client)
-    console.log(response)
-    return response
+        return cancelResponse
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
 const createViewingKey = async () => {
-    const createTx = new MsgExecuteContract({
-            sender: client.address,
-            contractAddress: config.factory.address,
-            codeHash: config.factory.codeHash, // optional but way faster
-            msg: {
-                create_viewing_key: {
-                    entropy: "eW8="
-                }
-            }
-        })
-    const response = await broadcastTx(createTx, client)
-    console.log(response)
-    return response
+    try {
+        const viewingKeyResponse = await execs.execViewingKey(client)
+        if(viewingKeyResponse.code !== 0){
+            console.error(viewingKeyResponse)
+            console.error("Failed to cancel the listing.")
+        }
+        return viewingKeyResponse
+    } catch (e) {
+        console.error(e.message)
+        return undefined
+    }
 }
 
 export const createListing = async (tokens, expiration, principalAsked) => {
-
     try {
-
-        const createOffspringMsg = {
-            create_offspring: {
-                label: "Offspring Test Contract" + Math.floor(Math.random() * 10000),
-                entropy: "random_word",
-                owner: client.address,
-                owner_is_public: true, // optional
-                principal_contract_msg: {
-                    code_hash: config.snip24.codeHash,
-                    address: config.snip24.address,
-                },
-                collateral_contract_msg: {
-                    code_hash: config.snip721.codeHash,
-                    address: config.snip721.address,
-                },
-                collateral_token_ids: tokens,
-                ends_after: parseInt(expiration),
-                principal_asked: principalAsked,
-                interest_rate: { // 20% (yes abnormally high, just for testing)
-                    rate: 200,
-                    decimal_places: 3
-                },
-                description: "Useless" //optional
-            }
-        }
-
-        const sendMsg = {
-            contract: config.factory.address,
-            token_ids: tokens,
-            receiver_info: {
-                recipient_code_hash: config.factory.codeHash,
-                also_implements_batch_receive_nft: true,
-            },
-            msg: Buffer.from(JSON.stringify(createOffspringMsg)).toString('base64'),
-        }
-
-
-        const batchSend = new MsgExecuteContract(
-            {
-                sender: client.address,
-                contractAddress: config.snip721.address,
-                codeHash: config.snip721.codeHash,
-                msg: {
-                    batch_send_nft: {
-                        sends: [sendMsg],
-                    }
-                }
-            })
-
-        const sim = await client.tx.simulate([batchSend])
-
-        const sendTx = await client.tx.broadcast([batchSend],
-            {
-                gasLimit: Math.ceil(sim.gasInfo.gasUsed * 1.1)
-            }
-        )
-
-        const offspringAddress = sendTx.arrayLog.find((a) => {
+        const createListingResponse = await execs.execCreateOffspring(tokens, expiration, principalAsked, client)
+        const offspringAddress = createListingResponse.arrayLog.find((a) => {
             return a.key === "offspring_address"
         })
-
         if (offspringAddress === undefined) {
             console.error("Listing transaction failed!")
             return undefined
         }
-
         fs.readFile("./config.json", 'utf8', function readFileCallback(err, data) {
             if (err) {
                 console.log(err)
@@ -254,18 +152,15 @@ export const createListing = async (tokens, expiration, principalAsked) => {
                 })
             }
         })
-
         console.log(
             "Successfully created listing and updated config.json!\n" +
             "Offspring Address: " + offspringAddress.value
         )
-
         return offspringAddress.value
-
     } catch (e) {
-        console.log(e.message)
+        console.error(e.message)
+        return undefined
     }
-
 }
 
 const args = process.argv.slice(2);
@@ -289,18 +184,19 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     } else if (args.length === 2 && args[0] === '--update-tax') {
         await updateTax(args[1])
     } else if (args.length === 2 && args[0] === '--change-status') {
-        await updateStatus(args[1])
+        await changeStatus(args[1])
     } else if (args.length === 1 && args[0] === '--create-viewing-key') {
         await createViewingKey(args[1])
     } else if (args.length === 1 && args[0] === '--help') {
         console.log(
             "\nAvailable arguments:\n" +
+            "--create-listing\n" +
             "--cancel-listing [offspring address]\n" +
             "--liquidate [offspring address]\n" +
             "--lend [offspring address] --principal [amount]\n" +
-            "--update-offspring [factory address]\n" +
-            "--update-tax [factory address]\n" +
-            "--change-status [factory address]\n" +
+            "--update-offspring\n" +
+            "--update-tax [rate] (1-99)\n" +
+            "--change-status [start/stop]\n" +
             "--create-viewing-key\n" +
             "Example: 'yarn run exec --create-viewing-key`\n"
         )

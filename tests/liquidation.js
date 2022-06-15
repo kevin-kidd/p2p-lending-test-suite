@@ -13,18 +13,18 @@ export const testLiquidation = async () => {
     let collateral_amount = 3
 
 
-    // Mint 3 new NFTs for collateral
-    console.log("\nMinting " + collateral_amount + " new NFTs for collateral...")
+    // Mint new NFTs for collateral
+    console.log("\nMinting " + collateral_amount + " new NFT(s) for collateral...")
     let mintResponse = await mint(collateral_amount)
-    if(mintResponse.length !== 3) {
-        console.error("Failed to mint 3 new NFTs")
+    if(mintResponse.length !== collateral_amount) {
+        console.error("Failed to mint " + collateral_amount + " new NFT(s)")
         return
     }
 
     // Verify the NFTs were minted
     const token_ids = await queryNFTs('borrower')
     let collateral
-    if(token_ids.token_list.tokens.length >= 2){
+    if(token_ids.token_list.tokens.length >= collateral_amount){
         collateral = token_ids.token_list.tokens.slice(0, collateral_amount)
     } else {
         console.error("Liquidation test failed. Unable to query for new NFTs.")
