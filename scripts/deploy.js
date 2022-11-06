@@ -7,7 +7,7 @@ const deploy = async (updateContracts) => {
     // Upload new contracts and update config.json
     if(updateContracts){
         console.log("Uploading new contracts...")
-        let uploadResponse = await uploadAll(["snip24", "snip721", "offspring", "factory"])
+        let uploadResponse = await uploadAll(["snip24", "snip721", "offspring", "factory", "bond_maker"]);
         if(uploadResponse) {
             console.log("New contracts uploaded and details saved to config.json\n")
         } else {
@@ -18,7 +18,7 @@ const deploy = async (updateContracts) => {
 
     // Instantiate all contracts and update config.json
     console.log("Instantiating contracts and setting viewing keys...")
-    let initResponse = await initAll(["snip24", "snip721", "factory"])
+    let initResponse = await initAll(["factory", "snip24", "snip721", "bond_maker"])
     if(initResponse){
         console.log("All contracts have been instantiated and details saved to config.json\n")
     } else {

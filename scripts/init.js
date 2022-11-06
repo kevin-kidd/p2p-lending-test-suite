@@ -32,6 +32,17 @@ const initMsgs = {
             enable_burn: false,
         }
     },
+    "bond_maker": {
+        entropy: "eW8=",
+        factories: [
+            {
+                address: config.factory.address,
+                code_hash: config.factory.codeHash
+            }
+        ],
+        name: "COVER BONDS MAKER",
+        symbol: "BONDS"
+    },
     "snip721": {
         name: "Test Snip721 NFT",
         admin: process.env.BORROWER_ADDRESS,
@@ -43,13 +54,27 @@ const initMsgs = {
         }
     },
     "factory": {
-        entropy: "rndm_word",
-        offspring_contract: {
+        offspring_code_info: {
             code_id: config.offspring.codeId,
             code_hash: config.offspring.codeHash
         },
+        bond_royalty_info: {
+            tax_addr: process.env.TAX_ADDRESS,
+            tax_rate: {
+                rate: 200,
+                decimal_places: 3
+            }
+        },
         tax_addr: process.env.TAX_ADDRESS,
-        tax_rate: {
+        principal_tax_rate: {
+            rate: 20,
+            decimal_places: 3
+        },
+        collateral_tax_rate: {
+            rate: 20,
+            decimal_places: 3
+        },
+        liquidation_tax_rate: {
             rate: 20,
             decimal_places: 3
         }
@@ -200,27 +225,27 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     if (args.length === 0) {
         console.log("No arguments provided, use --help for available arguments")
     } else if (args.length === 2 && args[0] === '--contract') {
-        const types = ["snip24", "snip721", "factory"]
+        const types = ["snip24", "snip721", "factory", "bond_maker"]
         if (types.includes(args[1])) {
             await initContract(args[1]).then(() => console.log("Contract details have been saved to config.json"))
         } else if (args[1] === "all") {
             await initAll(types).then(() => console.log("Contract details have been saved to config.json"))
         } else {
-            console.log("You did not supply a correct argument value! (snip24, snip721, factory, all)")
+            console.log("You did not supply a correct argument value! (snip24, snip721, factory, bond_maker, all)")
         }
     } else if (args.length === 2 && args[0] === '--set-viewing-key') {
-        const types = ["snip24", "snip721", "factory"]
+        const types = ["snip24", "snip721", "factory", "bond_maker"]
         if (types.includes(args[1])) {
             let viewing_key = await setViewingKeys(args[1], true, config[args[1]].address)
             console.log("Set new viewing key: " + viewing_key + " for contract: " + args[1])
         } else {
-            console.log("You did not supply a correct argument value! (snip24, snip721, factory)")
+            console.log("You did not supply a correct argument value! (snip24, snip721, factory, bond_maker)")
         }
     } else if (args.length === 1 && args[0] === '--help') {
         console.log(
             "\nAvailable arguments:\n" +
-            "--contract [snip721, snip24, factory]\n" +
-            "--set-viewing-key [snip721, snip24, factory]\n" +
+            "--contract [snip721, snip24, factory, bond_maker]\n" +
+            "--set-viewing-key [snip721, snip24, factory, bond_maker]\n" +
             "Example: 'yarn run init --set-viewing-key snip24'\n"
         )
     } else {

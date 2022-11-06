@@ -145,25 +145,32 @@ export const execCreateOffspring = async (tokens, expiration, principalAsked, cl
                             msg: Buffer.from(JSON.stringify({
                                     create_offspring: {
                                         label: "Offspring Test Contract" + Math.floor(Math.random() * 10000),
-                                        entropy: "random_word",
-                                        owner: client.address,
-                                        owner_is_public: true, // optional
-                                        principal_contract_msg: {
-                                            code_hash: config.snip24.codeHash,
-                                            address: config.snip24.address,
+                                        listing_type: "lend",
+                                        collateral_funds: {
+                                            snip721_exact: {
+                                                contract: {
+                                                    code_hash: config.snip721.codeHash,
+                                                    address: config.snip721.address
+                                                },
+                                                token_ids: tokens,
+                                            }
                                         },
-                                        collateral_contract_msg: {
-                                            code_hash: config.snip721.codeHash,
-                                            address: config.snip721.address,
+                                        principal_funds: {
+                                            snip20: {
+                                                contract: {
+                                                    code_hash: config.snip24.codeHash,
+                                                    address: config.snip24.address
+                                                },
+                                                decimals: 6,
+                                                symbol: "test",
+                                                amount: principalAsked
+                                            }
                                         },
-                                        collateral_token_ids: tokens,
                                         ends_after: parseInt(expiration),
-                                        principal_asked: principalAsked,
-                                        interest_rate: { // 20% (yes abnormally high, just for testing)
+                                        interest_rate: {
                                             rate: 200,
                                             decimal_places: 3
-                                        },
-                                        description: "Useless" //optional
+                                        }
                                     }
                                 }
                             )).toString('base64'),
