@@ -72,7 +72,7 @@ export const calculateGas = async (transaction, client) => {
     } catch (e) {
         console.log(e.message);
         console.error("\nUnable to calculate gas for the transaction.");
-        return 5_000_000;
+        return 1_000_000;
     }
 };
 

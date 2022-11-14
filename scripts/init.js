@@ -4,88 +4,95 @@ import { getClient } from "./helper.js";
 import fs from "fs";
 import url from "url";
 
-const file = fs.readFileSync("./config.json", "utf8");
-const config = JSON.parse(file);
+const getInitMsg = (type) => {
+    const file = fs.readFileSync("./config.json", "utf8");
+    const config = JSON.parse(file);
 
-const initMsgs = {
-    snip24: {
-        name: "Secret SCRT Test Token",
-        admin: process.env.BORROWER_ADDRESS,
-        symbol: "SSCRT",
-        decimals: 6,
-        initial_balances: [
-            {
-                address: process.env.BORROWER_ADDRESS,
-                amount: "1000000000000",
+    const initMsgs = {
+        snip24: {
+            name: "Secret SCRT Test Token",
+            admin: process.env.BORROWER_ADDRESS,
+            symbol: "SSCRT",
+            decimals: 6,
+            initial_balances: [
+                {
+                    address: process.env.BORROWER_ADDRESS,
+                    amount: "1000000000000",
+                },
+                {
+                    address: process.env.LENDER_ADDRESS,
+                    amount: "1000000000000",
+                },
+            ],
+            prng_seed: "eW8=",
+            config: {
+                public_total_supply: true,
+                enable_deposit: true,
+                enable_redeem: true,
+                enable_mint: false,
+                enable_burn: false,
             },
-            {
-                address: process.env.LENDER_ADDRESS,
-                amount: "1000000000000",
+        },
+        bond_maker: {
+            entropy: "eW8=",
+            factories: [
+                {
+                    address: config.factory.address,
+                    code_hash: config.factory.codeHash,
+                },
+            ],
+            name: "COVER BONDS MAKER",
+            symbol: "BONDS",
+        },
+        snip721: {
+            name: "Test Snip721 NFT",
+            admin: process.env.BORROWER_ADDRESS,
+            symbol: "XXXXX",
+            entropy: "eW8=",
+            config: {
+                public_token_supply: true,
+                public_owner: true,
             },
-        ],
-        prng_seed: "eW8=",
-        config: {
-            public_total_supply: true,
-            enable_deposit: true,
-            enable_redeem: true,
-            enable_mint: false,
-            enable_burn: false,
         },
-    },
-    bond_maker: {
-        entropy: "eW8=",
-        factories: [
-            {
-                address: config.factory.address,
-                code_hash: config.factory.codeHash,
+        factory: {
+            offspring_code_info: {
+                code_id: config.offspring.codeId,
+                code_hash: config.offspring.codeHash,
             },
-        ],
-        name: "COVER BONDS MAKER",
-        symbol: "BONDS",
-    },
-    snip721: {
-        name: "Test Snip721 NFT",
-        admin: process.env.BORROWER_ADDRESS,
-        symbol: "XXXXX",
-        entropy: "eW8=",
-        config: {
-            public_token_supply: true,
-            public_owner: true,
-        },
-    },
-    factory: {
-        offspring_code_info: {
-            code_id: config.offspring.codeId,
-            code_hash: config.offspring.codeHash,
-        },
-        bonds_contract: {
-            address: config.bond_maker.address,
-            code_hash: config.bond_maker.codeHash,
-        },
-        bond_royalty_info: {
+            bonds_contract: {
+                address: config.bond_maker.address,
+                code_hash: config.bond_maker.codeHash,
+            },
+            bond_royalty_info: {
+                tax_addr: process.env.TAX_ADDRESS,
+                tax_rate: {
+                    rate: 200,
+                    decimal_places: 3,
+                },
+            },
             tax_addr: process.env.TAX_ADDRESS,
-            tax_rate: {
-                rate: 200,
+            principal_tax_rate: {
+                rate: 20,
+                decimal_places: 3,
+            },
+            collateral_tax_rate: {
+                rate: 20,
+                decimal_places: 3,
+            },
+            liquidation_tax_rate: {
+                rate: 20,
                 decimal_places: 3,
             },
         },
-        tax_addr: process.env.TAX_ADDRESS,
-        principal_tax_rate: {
-            rate: 20,
-            decimal_places: 3,
-        },
-        collateral_tax_rate: {
-            rate: 20,
-            decimal_places: 3,
-        },
-        liquidation_tax_rate: {
-            rate: 20,
-            decimal_places: 3,
-        },
-    },
+    };
+
+    return initMsgs[type];
 };
 
 const setViewingKeys = async (type, updateConfig, contractAddress) => {
+    const file = fs.readFileSync("./config.json", "utf8");
+    const config = JSON.parse(file);
+
     const borrower_client = await getClient("borrower");
     const lender_client = await getClient("lender");
     const tax_client = await getClient("tax");
@@ -170,6 +177,8 @@ const setViewingKeys = async (type, updateConfig, contractAddress) => {
 };
 
 const initContract = async (type) => {
+    const file = fs.readFileSync("./config.json", "utf8");
+    const config = JSON.parse(file);
     try {
         const client = await getClient("borrower");
 
@@ -178,7 +187,7 @@ const initContract = async (type) => {
                 sender: client.address,
                 codeId: config[type].codeId,
                 codeHash: config[type].codeHash, // optional but way faster
-                initMsg: initMsgs[type],
+                initMsg: getInitMsg(type),
                 label:
                     type + " Test Contract" + Math.floor(Math.random() * 10000),
             },
