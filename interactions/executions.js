@@ -8,7 +8,14 @@ const execute = async (client, transaction) => {
     return await broadcastTx(transaction, client);
 };
 
-export const execUpdateTax = async (client, rate) => {
+export const execUpdateTax = async (
+    client, 
+    bondRoyaltyRate, 
+    collateralRate, 
+    liquidationRate, 
+    principalRate,
+    newTaxAddress
+) => {
     return await execute(
         client,
         new MsgExecuteContract({
@@ -16,11 +23,24 @@ export const execUpdateTax = async (client, rate) => {
             contractAddress: config.factory.address,
             codeHash: config.factory.codeHash,
             msg: {
-                update_tax: {
-                    tax_rate: {
+                change_tax_settings: {
+                    bond_royalty_rate: {
                         decimal_places: 2,
-                        rate: parseInt(rate),
+                        rate: parseInt(bondRoyaltyRate),
                     },
+                    collateral_tax_rate: {
+                        decimal_places: 2,
+                        rate: parseInt(collateralRate),
+                    },
+                    liquidation_tax_rate: {
+                        decimal_places: 2,
+                        rate: parseInt(liquidationRate),
+                    },
+                    principal_tax_rate: {
+                        decimal_places: 2,
+                        rate: parseInt(principalRate),
+                    },
+                    new_tax_addr: newTaxAddress
                 },
             },
         })

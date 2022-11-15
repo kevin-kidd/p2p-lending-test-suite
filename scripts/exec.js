@@ -6,9 +6,22 @@ import * as execs from "../interactions/executions.js";
 
 const client = await getClient("borrower");
 
-const updateTax = async (rate) => {
+const updateTax = async ( 
+    bondRoyaltyRate, 
+    collateralRate, 
+    liquidationRate, 
+    principalRate,
+    newTaxAddress
+) => {
     try {
-        const updateTaxResponse = await execs.execUpdateTax(client, rate);
+        const updateTaxResponse = await execs.execUpdateTax(
+            client, 
+            bondRoyaltyRate, 
+            collateralRate, 
+            liquidationRate, 
+            principalRate,
+            newTaxAddress
+        );
         if (updateTaxResponse.code !== 0) {
             console.error(updateTaxResponse);
             console.error("Unable to update tax rate.");
@@ -156,7 +169,7 @@ export const createListing = async (tokens, expiration, principalAsked) => {
         const offspringAddress = createListingResponse.arrayLog.find((a) => {
             return a.key === "offspring_address";
         });
-        if (offspringAddress === undefined) {
+        if (!offspringAddress) {
             console.error("Listing transaction failed!");
             console.log(createListingResponse);
             return undefined;
@@ -219,8 +232,14 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
         await lend(args[1], args[3]);
     } else if (args.length === 1 && args[0] === "--update-offspring") {
         await updateOffspring();
-    } else if (args.length === 2 && args[0] === "--update-tax") {
-        await updateTax(args[1]);
+    } else if (args.length === 1 && args[0] === "--update-tax") {
+        console.log("## NOTE: ENTER AN INTEGER FROM 1-99 FOR THE TAX RATE %");
+        let principalRate = readlineSync.question("Principal tax rate: ");
+        let collateralRate = readlineSync.question("Collateral tax rate: ");
+        let liquidationRate = readlineSync.question("Liquidation tax rate: ");
+        let bondRoyaltyRate = readlineSync.question("Bond royalty tax rate: ");
+        let newTaxAddress = readlineSync.question("New tax address: ");
+        await updateTax(bondRoyaltyRate, collateralRate, liquidationRate, principalRate, newTaxAddress);
     } else if (args.length === 2 && args[0] === "--change-status") {
         await changeStatus(args[1]);
     } else if (args.length === 1 && args[0] === "--create-viewing-key") {
@@ -233,7 +252,7 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
                 "--liquidate [offspring address]\n" +
                 "--lend [offspring address] --principal [amount]\n" +
                 "--update-offspring\n" +
-                "--update-tax [rate] (1-99)\n" +
+                "--update-tax\n" +
                 "--change-status [start/stop]\n" +
                 "--create-viewing-key\n" +
                 "Example: 'yarn run exec --create-viewing-key`\n"

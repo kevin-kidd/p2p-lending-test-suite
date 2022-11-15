@@ -116,8 +116,7 @@ export const queryNFTs = async (type) => {
 
 const queryActiveOffsprings = async () => {
     try {
-        const activeOffsprings = (await queries.listActiveOffsprings()).list_active_offspring.active
-        console.log(activeOffsprings)
+        const activeOffsprings = (await queries.listActiveOffsprings()).list_active_offspring.active;
         return activeOffsprings
     } catch (e) {
         console.error(e.message)

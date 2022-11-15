@@ -66,9 +66,9 @@ Update offspring contract's code ID and hash as defined in config.json
 ```angular2html
 yarn run exec --update-offspring
 ```
-Update tax rate, must be an integer from 1-100. In this example, the tax rate is 80%.
+Update tax rate
 ```angular2html
-yarn run exec --update-tax 80
+yarn run exec --update-tax
 ```
 Change the contract status. You can start/stop all offspring contract creations
 ```angular2html
