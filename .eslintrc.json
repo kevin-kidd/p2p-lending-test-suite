@@ -1,0 +1,18 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": ["prettier"],
+    "rules": {
+        "semi": ["error", "always"],
+        "indent": ["error", 2],
+        "prettier/prettier": "error"
+    }
+}

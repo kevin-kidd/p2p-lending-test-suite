@@ -9,6 +9,7 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.1",
+    "eslint": "^8.0.1",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.0",
     "prompt-sync": "^4.2.0",
@@ -16,6 +17,7 @@
     "secretjs": "latest"
   },
   "scripts": {
+    "lint": "eslint '**/*.js'",
     "upload": "node scripts/upload.js",
     "init": "node scripts/init.js",
     "mint": "node scripts/mint.js",
@@ -23,5 +25,13 @@
     "query": "node scripts/query.js",
     "deploy": "node scripts/deploy.js",
     "test": "node tests/test.js"
+  },
+  "devDependencies": {
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.0.0",
+    "prettier": "^2.8.0"
   }
 }
