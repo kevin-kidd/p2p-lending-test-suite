@@ -24,6 +24,7 @@
     "exec": "node scripts/exec.js",
     "query": "node scripts/query.js",
     "deploy": "node scripts/deploy.js",
+    "approve-contracts": "node scripts/approveContracts.js",
     "test": "node tests/test.js"
   },
   "devDependencies": {

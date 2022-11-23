@@ -22,8 +22,6 @@ const deploy = async (updateContracts) => {
     }
   }
 
-  // await delay(2000); /// waiting 0.5 seconds.
-
   // Instantiate all contracts and update config.json
   console.log("Instantiating contracts and setting viewing keys...");
   const initResponse = await initAll([
@@ -40,8 +38,6 @@ const deploy = async (updateContracts) => {
     console.error("Instantiation failed.");
     return;
   }
-
-  // await delay(2000);
 
   // Grab SCRT & SNIP-24 balances of both the lender and borrower accounts
   console.log("Fetching balances...");
